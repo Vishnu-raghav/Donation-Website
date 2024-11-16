@@ -5,52 +5,59 @@ import { conf } from '../../conf/conf';
 function PaypalBtn({ amount }) {
   const paypalRef = useRef();
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
-  const [paypalButtonRendered, setPaypalButtonRendered] = useState(false); 
+
+  const loadPaypalScript = () => {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = `https://www.paypal.com/sdk/js?client-id=${conf.paypalClientId}&components=buttons`;
+      script.async = true;
+      script.onload = () => resolve(script);
+      script.onerror = (err) => reject(new Error('PayPal SDK failed to load: ' + err));
+      document.body.appendChild(script);
+    });
+  };
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = `https://www.paypal.com/sdk/js?client-id=${conf.paypalClientId}&components=buttons`;
-    script.async = true;
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      setIsScriptLoaded(true);
-    };
-
-    script.onerror = (err) => {
-      console.error('PayPal SDK failed to load', err);
-    };
-
+    loadPaypalScript()
+      .then(() => {
+        setIsScriptLoaded(true);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
     return () => {
-      document.body.removeChild(script);
+      const script = document.querySelector(`script[src^="https://www.paypal.com/sdk/js"]`);
+      if (script) {
+        document.body.removeChild(script);
+      }
     };
   }, []);
 
   useEffect(() => {
-    if (isScriptLoaded && window.paypal && paypalRef.current && !paypalButtonRendered) {
-      window.paypal.Buttons({
-        createOrder: function (data, actions) {
-          return actions.order.create({
-            purchase_units: [
-              {
-                amount: {
-                  value: amount,
+    if (isScriptLoaded && window.paypal && paypalRef.current) {
+      if (!paypalRef.current.hasChildNodes()) {
+        window.paypal.Buttons({
+          createOrder: (data, actions) => {
+            return actions.order.create({
+              purchase_units: [
+                {
+                  amount: {
+                    value: amount,
+                  },
                 },
-              },
-            ],
-          });
-        },
-        onApprove: function (data, actions) {
-          alert('Donation successful! Thank you for your contribution');
-        },
-        onError: function (err) {
-          console.error('PayPal Button Error:', err);
-        },
-      }).render(paypalRef.current);
-
-      setPaypalButtonRendered(true);
+              ],
+            });
+          },
+          onApprove: (data, actions) => {
+            alert('Donation successful! Thank you for your contribution');
+          },
+          onError: (err) => {
+            console.error('PayPal Button Error:', err);
+          },
+        }).render(paypalRef.current);
+      }
     }
-  }, [isScriptLoaded, amount, paypalButtonRendered]);
+  }, [isScriptLoaded, amount]);
 
   return <div ref={paypalRef}></div>;
 }
