@@ -6,7 +6,7 @@ import App from './App';
 import DonatePage from './pages/DonatePage/DonatePage';
 import './index.css'; 
 import HomePage from './pages/HomePage/Home';
-import About from './pages/About/about'
+import About from './pages/About/About'
 import Contact from './pages/ContactPage/Contact';
 import NgoPage from './pages/NgoPage/Ngopage';
 

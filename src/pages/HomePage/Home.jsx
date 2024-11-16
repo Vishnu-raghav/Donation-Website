@@ -1,7 +1,7 @@
 
 import React from 'react';
-import NgoList from '../../components/NgoList/NgoList'; // Adjust the import path as necessary
-import HeroSlider from '../../components/HeroSlider/Slider'; // Adjust the import path as necessary
+import NgoList from '../../components/NgoList/NgoList'; 
+import HeroSlider from '../../components/HeroSlider/Slider'; 
 
 const HomePage = () => {
   return (
